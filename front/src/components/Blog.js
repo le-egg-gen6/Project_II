@@ -1,59 +1,62 @@
-"use client"
+"use client";
 
-import { useSelector, useDispatch } from "react-redux"
-import { setNotification } from "../reducers/notificationReducer"
-import { updateBlog, deleteBlog } from "../reducers/blogReducer"
-import { Card, Badge } from "flowbite-react"
-import CommentIcon from "@mui/icons-material/Comment"
-import ReactionSystem from "./ReactionSystem"
-import { Hash, Calendar, User } from "lucide-react"
+import { useSelector, useDispatch } from "react-redux";
+import { setNotification } from "../reducers/notificationReducer";
+import { updateBlog, deleteBlog } from "../reducers/blogReducer";
+import { Card, Badge } from "flowbite-react";
+import CommentIcon from "@mui/icons-material/Comment";
+import ReactionSystem from "./ReactionSystem";
+import { Hash, Calendar, User } from "lucide-react";
 
 const Blog = ({ blog, viewMode = "grid" }) => {
-  const user = useSelector((state) => state.users)
-  const dispatch = useDispatch()
-  const blogs = useSelector((state) => state.blogs)
+  const user = useSelector((state) => state.users);
+  const dispatch = useDispatch();
+  const blogs = useSelector((state) => state.blogs);
 
   if (blog === undefined) {
-    return null
+    return null;
   }
 
-  const comments = blog.comments ? blog.comments : []
+  const comments = blog.comments ? blog.comments : [];
 
   const handleUpdateBlog = async (blogObject) => {
     try {
-      await dispatch(updateBlog(blogObject))
+      await dispatch(updateBlog(blogObject));
     } catch (error) {
       const notif = {
         message: error.response.data.error,
         type: "error",
-      }
-      dispatch(setNotification(notif, 2500))
+      };
+      dispatch(setNotification(notif, 2500));
     }
-  }
+  };
 
   const handleDeleteBlog = async (id) => {
-    const blog1 = blogs.filter((b) => b.id === id)
-    const title = blog1[0].title
+    const blog1 = blogs.filter((b) => b.id === id);
+    const title = blog1[0].title;
     if (window.confirm(`Do you want to delete ${title}?`)) {
       try {
-        await dispatch(deleteBlog(id))
+        await dispatch(deleteBlog(id));
         const notif = {
           message: "Successfully deleted",
           type: "success",
-        }
-        dispatch(setNotification(notif, 2500))
+        };
+        dispatch(setNotification(notif, 2500));
       } catch (error) {
         const notif = {
           message: error.message,
           type: "error",
-        }
-        dispatch(setNotification(notif, 2500))
+        };
+        dispatch(setNotification(notif, 2500));
       }
     }
-  }
+  };
 
-  var summary = blog.content.substring(0, 130)
-  summary = summary.length === 130 ? summary.substr(0, Math.min(summary.length, summary.lastIndexOf(" "))) : summary
+  var summary = blog.content.substring(0, 130);
+  summary =
+    summary.length === 130
+      ? summary.substr(0, Math.min(summary.length, summary.lastIndexOf(" ")))
+      : summary;
 
   const getCategoryColor = (category) => {
     const colors = {
@@ -67,9 +70,9 @@ const Blog = ({ blog, viewMode = "grid" }) => {
       health: "teal",
       education: "indigo",
       other: "gray",
-    }
-    return colors[category] || "gray"
-  }
+    };
+    return colors[category] || "gray";
+  };
 
   if (viewMode === "list") {
     return (
@@ -78,7 +81,10 @@ const Blog = ({ blog, viewMode = "grid" }) => {
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-2">
               {blog.category && (
-                <Badge color={getCategoryColor(blog.category)} size="sm">
+                <Badge
+                  size="sm"
+                  className="font-medium text-gray-900 dark:text-white"
+                >
                   {blog.category}
                 </Badge>
               )}
@@ -93,7 +99,9 @@ const Blog = ({ blog, viewMode = "grid" }) => {
               <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white hover:text-blue-600 transition-colors">
                 {blog.title}
               </h5>
-              <p className="font-normal text-gray-700 dark:text-gray-400 mt-2">{summary}</p>
+              <p className="font-normal text-gray-700 dark:text-gray-400 mt-2">
+                {summary}
+              </p>
             </a>
             <div className="flex items-center justify-between mt-4">
               <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -117,14 +125,20 @@ const Blog = ({ blog, viewMode = "grid" }) => {
           </div>
         </div>
       </Card>
-    )
+    );
   }
 
   return (
-    <Card className="mb-4 hover:shadow-lg transition-shadow" href={`/posts/${blog.id}`}>
+    <Card
+      className="mb-4 hover:shadow-lg transition-shadow"
+      href={`/posts/${blog.id}`}
+    >
       <div className="flex items-center space-x-2 mb-3">
         {blog.category && (
-          <Badge color={getCategoryColor(blog.category)} size="sm">
+          <Badge
+            size="sm"
+            className="font-medium text-gray-900 dark:text-white"
+          >
             {blog.category}
           </Badge>
         )}
@@ -135,7 +149,9 @@ const Blog = ({ blog, viewMode = "grid" }) => {
           </Badge>
         ))}
       </div>
-      <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{blog.title}</h5>
+      <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+        {blog.title}
+      </h5>
       <p className="font-normal text-gray-700 dark:text-gray-400">{summary}</p>
       <div className="flex items-center justify-between mt-4">
         <div className="flex items-center space-x-3 text-sm text-gray-500">
@@ -151,7 +167,7 @@ const Blog = ({ blog, viewMode = "grid" }) => {
         </div>
       </div>
     </Card>
-  )
-}
+  );
+};
 
-export default Blog
+export default Blog;

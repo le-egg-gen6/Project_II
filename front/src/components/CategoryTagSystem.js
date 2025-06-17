@@ -111,6 +111,7 @@ const CategoryTagSystem = ({
             <Dropdown.Item
               key={category.value}
               onClick={() => onCategoryChange(category.value)}
+              color="gray"
             >
               <div className="flex items-center space-x-2">
                 <Badge color={category.color} size="sm">

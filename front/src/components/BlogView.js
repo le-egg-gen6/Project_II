@@ -113,19 +113,19 @@ const BlogView = ({ blog }) => {
     user && (user.id === blog.user?.id || user.id === blog.user);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <main className="pt-8 pb-16 lg:pt-16 lg:pb-24">
         <div className="max-w-4xl mx-auto px-4">
-          <article className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+          <article className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition-colors duration-300">
             {/* Header */}
-            <header className="p-8 border-b border-gray-200 dark:border-gray-700">
+            <header className="p-8 border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
               {/* Category and Tags */}
               <div className="flex flex-wrap items-center gap-2 mb-4">
                 {blog.category && (
                   <Badge
                     color={getCategoryColor(blog.category)}
                     size="sm"
-                    className="font-medium"
+                    className="font-medium text-gray-900 dark:text-white"
                   >
                     {blog.category.charAt(0).toUpperCase() +
                       blog.category.slice(1)}
@@ -156,7 +156,7 @@ const BlogView = ({ blog }) => {
                     <User className="w-5 h-5 text-gray-500" />
                     <a
                       href={`/users/${blogUser?.username}`}
-                      className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                      className="font-medium text-blue-600 dark:text-blue-400 hover:underline transition-colors duration-300"
                     >
                       u/{blogUser?.username || "Unknown"}
                     </a>
@@ -180,7 +180,7 @@ const BlogView = ({ blog }) => {
                       size="sm"
                       color="gray"
                       href={`/posts/edit/${blog.id}`}
-                      className="rounded-lg"
+                      className="rounded-lg transition-colors duration-300"
                     >
                       <Edit className="w-4 h-4 mr-2" />
                       Edit
@@ -189,7 +189,7 @@ const BlogView = ({ blog }) => {
                       size="sm"
                       color="failure"
                       onClick={() => handleDeleteBlog(blog.id)}
-                      className="rounded-lg"
+                      className="rounded-lg transition-colors duration-300"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete
@@ -200,8 +200,8 @@ const BlogView = ({ blog }) => {
             </header>
 
             {/* Content */}
-            <div className="p-8">
-              <div className="prose prose-lg dark:prose-invert max-w-none">
+            <div className="p-8 transition-colors duration-300">
+              <div className="prose prose-lg dark:prose-invert max-w-none transition-colors duration-300">
                 <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                   {blog.content}
                 </div>
@@ -252,7 +252,7 @@ const BlogView = ({ blog }) => {
             </div>
 
             {/* Comments Section */}
-            <section className="border-t border-gray-200 dark:border-gray-700">
+            <section className="border-t border-gray-200 dark:border-gray-700 transition-colors duration-300">
               <div className="p-8">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -275,18 +275,22 @@ const BlogView = ({ blog }) => {
                       <button
                         type="submit"
                         disabled={!newComment.trim()}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-300"
                       >
                         Post Comment
                       </button>
                     </div>
                   </form>
                 ) : (
-                  <div className="mb-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl text-center">
+                  <div className="mb-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl text-center transition-colors duration-300">
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
                       Join the discussion! Sign in to leave a comment.
                     </p>
-                    <Button href="/login" color="blue" className="rounded-lg">
+                    <Button
+                      href="/login"
+                      color="blue"
+                      className="rounded-lg transition-colors duration-300"
+                    >
                       Sign In
                     </Button>
                   </div>

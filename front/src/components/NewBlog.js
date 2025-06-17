@@ -121,18 +121,18 @@ const NewBlog = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <main className="pt-8 pb-16 lg:pt-16 lg:pb-12">
         <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 transition-colors duration-300">
             {/* Header */}
-            <div className="p-8 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <div className="p-8 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 transition-colors duration-300">
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-4">
                   <button
                     type="button"
                     onClick={() => navigate("/")}
-                    className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors duration-300"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
@@ -144,7 +144,7 @@ const NewBlog = () => {
                   <button
                     type="button"
                     onClick={() => setShowPreview(!showPreview)}
-                    className="flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-300"
                   >
                     <Eye className="w-4 h-4" />
                     <span>{showPreview ? "Edit" : "Preview"}</span>
@@ -162,7 +162,7 @@ const NewBlog = () => {
                     <Label
                       htmlFor="post-title"
                       value="Title"
-                      className="text-lg font-medium mb-3 block text-gray-900 dark:text-white"
+                      className="text-lg font-medium mb-3 block text-gray-900 dark:text-white transition-colors duration-300"
                     />
                     <TextInput
                       id="post-title"
@@ -190,7 +190,7 @@ const NewBlog = () => {
                     <Label
                       htmlFor="post-content"
                       value="Content"
-                      className="text-lg font-medium mb-3 block text-gray-900 dark:text-white"
+                      className="text-lg font-medium mb-3 block text-gray-900 dark:text-white transition-colors duration-300"
                     />
                     <UserMentions
                       value={newContent}
@@ -204,7 +204,7 @@ const NewBlog = () => {
                   <div>
                     <Label
                       value="Attachments (Optional)"
-                      className="text-lg font-medium mb-3 block text-gray-900 dark:text-white"
+                      className="text-lg font-medium mb-3 block text-gray-900 dark:text-white transition-colors duration-300"
                     />
                     <FileUpload onFileUpload={handleFileUpload} />
 

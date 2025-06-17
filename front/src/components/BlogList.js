@@ -74,11 +74,13 @@ const BlogList = () => {
                   {/* Filter Toggle */}
                   <Button
                     size="sm"
-                    color={hasActiveFilters ? "blue" : "gray"}
+                    color={hasActiveFilters ? "blue " : "gray"}
                     onClick={() => setShowFilters(!showFilters)}
                   >
-                    <Filter className="w-4 h-4 mr-2" />
-                    Filters
+                    <Filter className="w-4 h-4 mr-2 text-gray-900 dark:text-white" />
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      Filters
+                    </p>
                     {hasActiveFilters && (
                       <span className="ml-2 bg-blue-600 text-white text-xs rounded-full px-2 py-1">
                         {(selectedCategory ? 1 : 0) + selectedTags.length}
@@ -92,7 +94,7 @@ const BlogList = () => {
               {showFilters && (
                 <Card className="mb-6">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Filter Posts</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Filter Posts</h3>
                     {hasActiveFilters && (
                       <Button size="sm" color="gray" onClick={clearFilters}>
                         Clear All

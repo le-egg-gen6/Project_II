@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Navbar, Dropdown } from "flowbite-react";
 import { useDispatch } from "react-redux";
-import { setUser } from "../reducers/userReducer";
+import { logoutUser } from "../reducers/userReducer";
 import { useNavigate } from "react-router-dom";
 import ForumIcon from "@mui/icons-material/Forum";
 import { Search, Plus, Sun, Moon, Info, ChevronDown } from "lucide-react";
@@ -16,26 +16,23 @@ const NavigationBar = ({ user, handleThemeSwitch, theme }) => {
   const [showSearch, setShowSearch] = useState(false);
 
   const logout = async (event) => {
-    event.preventDefault();
-    event.stopPropagation();
+    // event.preventDefault();
+    // event.stopPropagation();
 
     try {
       console.log("Logging out user...");
 
-      // Clear all localStorage
-      localStorage.removeItem("AKAppSessionID");
-      localStorage.removeItem("loggedBlogappUser");
-      localStorage.clear();
+      // Use the proper logout action
+      await dispatch(logoutUser());
 
-      // Clear Redux state
-      dispatch(setUser(null));
-
-      // Force immediate redirect
-      window.location.href = "/";
+      // Small delay to ensure cleanup is complete
+      setTimeout(() => {
+        window.location.replace("/login");
+      }, 100);
     } catch (error) {
       console.error("Logout error:", error);
       // Force redirect anyway
-      window.location.href = "/";
+      window.location.replace("/login");
     }
   };
 
