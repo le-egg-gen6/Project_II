@@ -31,21 +31,37 @@ const ChatSystem = () => {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [unreadCounts, setUnreadCounts] = useState({});
 
-  // SIMPLIFIED typing state
-  const [typingUsers, setTypingUsers] = useState(new Map()); // userId -> {username, timestamp}
+  // Typing state
+  const [typingUsers, setTypingUsers] = useState(new Map());
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
 
   // Refs
   const messagesEndRef = useRef(null);
 
+  // Set axios base URL
+  useEffect(() => {
+    const baseURL = process.env.REACT_APP_API_URL || "http://localhost:3003";
+    axios.defaults.baseURL = baseURL;
+    console.log("🔗 Axios base URL set to:", baseURL);
+  }, []);
+
   // Initialize socket connection
   useEffect(() => {
-    if (user?.token) {
-      console.log("🔌 Initializing socket connection for user:", user.username);
+    if (user?.token && user?.id) {
+      console.log(
+        "🔌 Initializing socket connection for user:",
+        user.username,
+        "ID:",
+        user.id
+      );
       initializeSocket();
     } else {
-      console.log("❌ No user token, skipping socket initialization");
+      console.log("❌ Missing user data:", {
+        hasToken: !!user?.token,
+        hasId: !!user?.id,
+        username: user?.username,
+      });
     }
 
     return () => {
@@ -55,9 +71,14 @@ const ChatSystem = () => {
         socketRef.current = null;
       }
     };
-  }, [user]);
+  }, [user?.token, user?.id]);
 
   const initializeSocket = useCallback(() => {
+    if (socketRef.current) {
+      console.log("🔄 Socket already exists, disconnecting first");
+      socketRef.current.disconnect();
+    }
+
     const serverUrl =
       process.env.REACT_APP_SOCKET_URL || "http://localhost:3003";
     console.log("🔗 Connecting to socket server:", serverUrl);
@@ -79,22 +100,41 @@ const ChatSystem = () => {
       console.log("✅ Connected to chat server with ID:", newSocket.id);
       setIsConnected(true);
       setSocket(newSocket);
+
+      // Test connection
+      newSocket.emit("test_connection", { message: "Hello from frontend" });
     });
 
     newSocket.on("disconnect", (reason) => {
       console.log("❌ Disconnected from server:", reason);
       setIsConnected(false);
       setTypingUsers(new Map());
+      setSocket(null);
     });
 
     newSocket.on("connect_error", (error) => {
-      console.error("🚫 Connection error:", error.message);
+      console.error("🚫 Connection error:", error);
+      console.error("🚫 Error details:", {
+        message: error.message,
+        description: error.description,
+        context: error.context,
+        type: error.type,
+      });
       setIsConnected(false);
+    });
+
+    // Test response
+    newSocket.on("test_response", (data) => {
+      console.log("🧪 Test response received:", data);
     });
 
     // User events
     newSocket.on("users_online", (users) => {
-      console.log("👥 Received online users:", users.length);
+      console.log(
+        "👥 Received online users:",
+        users.length,
+        users.map((u) => u.username)
+      );
       setOnlineUsers(users);
     });
 
@@ -103,7 +143,9 @@ const ChatSystem = () => {
       console.log("📨 MESSAGE RECEIVED:", {
         id: message._id,
         from: message.sender.username,
+        to: message.recipient.username,
         content: message.content.substring(0, 30) + "...",
+        timestamp: message.timestamp,
       });
 
       // Clear typing indicator for this user when they send a message
@@ -116,6 +158,7 @@ const ChatSystem = () => {
       setMessages((prevMessages) => {
         const exists = prevMessages.some((msg) => msg._id === message._id);
         if (exists) {
+          console.log("⚠️ Message already exists, skipping");
           return prevMessages;
         }
         return [...prevMessages, message];
@@ -142,12 +185,22 @@ const ChatSystem = () => {
       updateMessageDeliveryStatus(data.messageId, "delivered");
     });
 
-    // TYPING EVENTS - IMMEDIATE RESPONSE
+    newSocket.on("message_read", (data) => {
+      console.log("👁️ Message read:", data.messageId);
+      updateMessageDeliveryStatus(data.messageId, "read");
+    });
+
+    // Typing events
     newSocket.on("user_typing", (data) => {
       console.log(
         "⌨️ RECEIVED TYPING EVENT:",
         data.username,
-        "in conversation:",
+        "userID:",
+        data.userId
+      );
+      console.log(
+        "🔍 Active conversation:",
+        activeConversation?.userId,
         activeConversation?.username
       );
 
@@ -193,8 +246,13 @@ const ChatSystem = () => {
       }
     });
 
+    // Debug: Log all socket events
+    newSocket.onAny((event, ...args) => {
+      console.log("📡 Socket event received:", event, args);
+    });
+
     setSocket(newSocket);
-  }, [user, activeConversation]);
+  }, [user?.token, activeConversation?.userId]);
 
   // Handle new incoming message
   const handleNewMessage = useCallback(
@@ -229,7 +287,10 @@ const ChatSystem = () => {
   // Load messages for conversation
   const loadMessages = useCallback(
     async (userId) => {
-      if (!user?.token) return;
+      if (!user?.token) {
+        console.error("❌ No user token for loading messages");
+        return;
+      }
 
       console.log("📚 Loading messages for user:", userId);
       setIsLoadingMessages(true);
@@ -238,7 +299,7 @@ const ChatSystem = () => {
         const response = await axios.get(
           `/api/messages/conversation/${userId}`,
           {
-            headers: { Authorization: `bearer ${user.token}` },
+            headers: { Authorization: `Bearer ${user.token}` },
           }
         );
 
@@ -251,13 +312,16 @@ const ChatSystem = () => {
           scrollToBottom();
         }, 200);
       } catch (error) {
-        console.error("❌ Failed to load messages:", error);
+        console.error(
+          "❌ Failed to load messages:",
+          error.response?.data || error.message
+        );
         setMessages([]);
       } finally {
         setIsLoadingMessages(false);
       }
     },
-    [user]
+    [user?.token]
   );
 
   // Mark messages as read
@@ -269,14 +333,17 @@ const ChatSystem = () => {
         await axios.put(
           `/api/messages/mark-read/${userId}`,
           {},
-          { headers: { Authorization: `bearer ${user.token}` } }
+          { headers: { Authorization: `Bearer ${user.token}` } }
         );
         setUnreadCounts((prev) => ({ ...prev, [userId]: 0 }));
       } catch (error) {
-        console.error("❌ Failed to mark messages as read:", error);
+        console.error(
+          "❌ Failed to mark messages as read:",
+          error.response?.data || error.message
+        );
       }
     },
-    [user]
+    [user?.token]
   );
 
   // Send message
@@ -288,15 +355,26 @@ const ChatSystem = () => {
       !isConnected ||
       isSending
     ) {
+      console.log("❌ Cannot send message:", {
+        hasMessage: !!newMessage.trim(),
+        hasConversation: !!activeConversation,
+        hasSocket: !!socket,
+        isConnected,
+        isSending,
+      });
       return;
     }
 
     const tempId = `temp_${Date.now()}_${Math.random()}`;
     const messageContent = newMessage.trim();
 
-    console.log("📤 SENDING MESSAGE to:", activeConversation.username);
+    console.log("📤 SENDING MESSAGE:", {
+      to: activeConversation.username,
+      content: messageContent.substring(0, 30) + "...",
+      tempId,
+    });
 
-    // STOP TYPING IMMEDIATELY when sending
+    // Stop typing immediately when sending
     if (isTyping) {
       console.log("📤 STOP TYPING - Sending message");
       socket.emit("stop_typing", { recipient: activeConversation.userId });
@@ -325,7 +403,7 @@ const ChatSystem = () => {
     };
 
     setMessages((prev) => [...prev, optimisticMessage]);
-    setNewMessage(""); // This will trigger handleInputChange with empty value
+    setNewMessage("");
     setIsSending(true);
 
     // Send via socket
@@ -386,7 +464,7 @@ const ChatSystem = () => {
   // Start conversation
   const startConversation = useCallback(
     async (userId, username) => {
-      console.log("💬 Starting conversation with:", username);
+      console.log("💬 Starting conversation with:", username, "ID:", userId);
 
       // Clear typing indicators when switching conversations
       setTypingUsers(new Map());
@@ -406,25 +484,29 @@ const ChatSystem = () => {
     }
   }, []);
 
-  // SIMPLIFIED INPUT CHANGE - IMMEDIATE TYPING DETECTION
+  // Handle input change with typing detection
   const handleInputChange = useCallback(
     (e) => {
       const value = e.target.value;
       setNewMessage(value);
 
-      if (!socket || !activeConversation || !isConnected) return;
+      if (!socket || !activeConversation || !isConnected) {
+        console.log(
+          "❌ Cannot handle typing - missing socket/conversation/connection"
+        );
+        return;
+      }
 
       const hasContent = value.trim().length > 0;
 
       console.log("📝 INPUT CHANGE:", {
-        value: value.substring(0, 20) + (value.length > 20 ? "..." : ""),
         hasContent,
         isCurrentlyTyping: isTyping,
         inputLength: value.length,
       });
 
       if (hasContent) {
-        // HAS CONTENT - Start typing if not already
+        // Start typing if not already
         if (!isTyping) {
           console.log("🟢 START TYPING - Input has content");
           socket.emit("typing", { recipient: activeConversation.userId });
@@ -447,7 +529,7 @@ const ChatSystem = () => {
           setIsTyping(false);
         }, 2000);
       } else {
-        // NO CONTENT - Stop typing immediately
+        // Stop typing immediately when input is empty
         if (isTyping) {
           console.log("🔴 STOP TYPING - Input is empty");
           socket.emit("stop_typing", { recipient: activeConversation.userId });
@@ -527,7 +609,10 @@ const ChatSystem = () => {
     };
   }, []);
 
-  if (!user) return null;
+  if (!user) {
+    console.log("❌ No user data available");
+    return null;
+  }
 
   const filteredUsers = allUsers.filter(
     (u) =>
